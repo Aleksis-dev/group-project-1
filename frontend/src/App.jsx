@@ -93,7 +93,7 @@ function App() {
               <p>Price per passenger: ${f.price}</p>
               <p>Total Price: ${f.price * f.passengers}</p>
               <button
-                className="mt-2 rounded-full px-4 py-2 bg-red-500 hover:bg-red-600 font-bold"
+                className="mt-2 rounded-full px-4 py-2 bg-red-500 hover:bg-red-600 font-bold duration-150 hover:bg-red-600 active:bg-red-700 shadow-lg/20"
                 onClick={() => handleCancelFlight(f.id)}
               >
                 Cancel Booking
