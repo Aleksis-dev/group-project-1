@@ -10,9 +10,7 @@ function App() {
 
   const getFlights = async () => {
     try {
-      const data = await Ajax({
-        route: "/api/flights",
-      });
+      const data = await Ajax({ route: "/api/flights" });
       setFlights(data.Flights);
     } catch (error) {
       console.error("Failed to fetch flights:", error.message);
@@ -27,56 +25,48 @@ function App() {
 
   const filteredFlights = flights.filter(flight => {
     if (!search.trim()) return true;
-
     const [fromSearch, toSearch] = search
       .toLowerCase()
       .split(/\s*->\s*|\s*-\s*/)
       .map(s => s.trim());
-
     const from = flight.from.toLowerCase();
     const to = flight.to.toLowerCase();
-
-    if (fromSearch && toSearch) {
-      return from.includes(fromSearch) && to.includes(toSearch);
-    }
-
+    if (fromSearch && toSearch) return from.includes(fromSearch) && to.includes(toSearch);
     return from.includes(fromSearch) || to.includes(fromSearch);
   });
 
-const handleBookFlight = (flight) => {
-  const flightPassengers = passengers[flight.id] || 1;
-
-  if (flightPassengers <= 0) {
-    alert("Please enter a valid number of passengers.");
-    return;
-  }
-
-  setBookedFlights(prev => {
-    const existingIndex = prev.findIndex(f => f.id === flight.id);
-
-    if (existingIndex !== -1) {
-      const updatedFlights = [...prev];
-      updatedFlights[existingIndex] = {
-        ...updatedFlights[existingIndex],
-        passengers: updatedFlights[existingIndex].passengers + flightPassengers,
-        bookedAt: new Date().toLocaleString(),
-      };
-      return updatedFlights;
+  const handleBookFlight = (flight) => {
+    const flightPassengers = passengers[flight.id] || 1;
+    if (flightPassengers <= 0) {
+      alert("Please enter a valid number of passengers.");
+      return;
     }
-
-    return [
-      ...prev,
-      {
-        ...flight,
-        passengers: flightPassengers,
-        bookedAt: new Date().toLocaleString()
+    setBookedFlights(prev => {
+      const existingIndex = prev.findIndex(f => f.id === flight.id);
+      if (existingIndex !== -1) {
+        const updatedFlights = [...prev];
+        updatedFlights[existingIndex] = {
+          ...updatedFlights[existingIndex],
+          passengers: updatedFlights[existingIndex].passengers + flightPassengers,
+          bookedAt: new Date().toLocaleString(),
+        };
+        return updatedFlights;
       }
-    ];
-  });
+      return [
+        ...prev,
+        {
+          ...flight,
+          passengers: flightPassengers,
+          bookedAt: new Date().toLocaleString()
+        }
+      ];
+    });
+    setPassengers({ ...passengers, [flight.id]: 1 });
+  };
 
-  alert(`Successfully booked ${flightPassengers} passenger(s) on flight ${flight.from} -> ${flight.to}`);
-};
-
+  const handleCancelFlight = (flightId) => {
+    setBookedFlights(prev => prev.filter(f => f.id !== flightId));
+  };
 
   return (
     <div className="w-screen h-screen montserrat text-white overflow-auto">
@@ -94,27 +84,32 @@ const handleBookFlight = (flight) => {
       {bookedFlights.length > 0 && (
         <div className="">
           <h1 className="text-3xl font-bold p-5 bg-linear-to-r text-white from-green-900 to-transparent">Your Booked Flights</h1>
-          <br />
-          {bookedFlights.map((f, i) => (
-            <div key={i} className="ml-[2.5vw] w-[95vw] p-4 rounded-xl bg-linear-to-r text-white from-green-700 to-transparent mb-3">
+          {bookedFlights.map((f) => (
+            <div key={f.id} className="mt-[.7vw] ml-[2.5vw] w-[95vw] p-4 rounded-xl bg-linear-to-r text-white from-green-700 to-transparent mb-3 duration-150 hover:border-5">
               <p className="text-xl font-medium">Flight: {f.from} {"->"} {f.to}</p>
               <p>Passengers: {f.passengers}</p>
               <p>Booked At: {f.bookedAt}</p>
               <p>Airline: {f.airline}</p>
               <p>Price per passenger: ${f.price}</p>
               <p>Total Price: ${f.price * f.passengers}</p>
+              <button
+                className="mt-2 rounded-full px-4 py-2 bg-red-500 hover:bg-red-600 font-bold"
+                onClick={() => handleCancelFlight(f.id)}
+              >
+                Cancel Booking
+              </button>
             </div>
           ))}
         </div>
       )}
 
-      <h1 className="text-3xl font-bold bg-linear-to-r text-white from-zinc-600 to-transparent p-5">Available Flights</h1>
+      <h1 className="text-3xl font-bold bg-linear-to-r text-white from-rose-900 to-transparent p-5">Available Flights</h1>
 
       {isLoading && <h1 className="text-3xl p-5">Loading Flights...</h1>}
 
       {filteredFlights.map((flight) => (
         <div
-          className="mt-[1.5vw] flex flex-col gap-[1vw] items-start w-[95%] ml-[2.5%] p-5 rounded-2xl bg-linear-to-r text-white from-blue-900 to-transparent duration-300"
+          className="mt-[.7vw] flex flex-col gap-[1vw] items-start w-[95%] ml-[2.5%] p-5 rounded-2xl bg-linear-to-r text-white from-rose-700 to-transparent duration-150 hover:border-5"
           key={flight.id}
         >
           <h1 className="font-medium text-3xl">Flight: {`${flight.from} -> ${flight.to}`}</h1>
